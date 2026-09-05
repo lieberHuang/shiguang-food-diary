@@ -17,11 +17,9 @@ import {
   Utensils,
   ImagePlus,
   Check,
-  Pencil,
   Trash2,
   LoaderCircle,
   X,
-  SlidersHorizontal,
   ArrowRight,
   ScanLine,
   Info,
@@ -39,7 +37,6 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
 import { Toaster, toast } from '@/components/ui/toast';
 
 type Meal = '早餐' | '午餐' | '晚餐' | '加餐';
@@ -56,7 +53,6 @@ type Food = {
   time: string;
   sample?: boolean;
 };
-type Goal = { p: number; c: number; f: number };
 const meals: Meal[] = ['早餐', '午餐', '晚餐', '加餐'];
 const mealIcons = [Sunrise, Sun, Moon, Cookie];
 const mealTimes = [
@@ -144,11 +140,9 @@ export default function Home() {
   const [today, setToday] = useState('2026-09-05');
   const [date, setDate] = useState('2026-09-05');
   const [foods, setFoods] = useState<Food[]>([]);
-  const [goal, setGoal] = useState<Goal>({ p: 100, c: 250, f: 60 });
   const [ready, setReady] = useState(false);
-  const [modal, setModal] = useState<'add' | 'edit' | 'goal' | null>(null);
+  const [modal, setModal] = useState<'add' | 'edit' | null>(null);
   const [draft, setDraft] = useState<Food>(fresh('午餐', '2026-09-05'));
-  const [goalDraft, setGoalDraft] = useState<Goal>(goal);
   const [endpoint, setEndpoint] = useState('');
   const [busy, setBusy] = useState(false);
   const [photo, setPhoto] = useState('');
@@ -166,14 +160,7 @@ export default function Home() {
       const saved = localStorage.getItem(key);
       if (saved) {
         const data = JSON.parse(saved);
-        if (
-          !Array.isArray(data.foods) ||
-          !data.goal ||
-          !['p', 'c', 'f'].every(
-            (k) => Number.isFinite(data.goal[k]) && data.goal[k] > 0,
-          )
-        )
-          throw Error();
+        if (!Array.isArray(data.foods)) throw Error();
         setFoods(
           data.foods.filter(
             (f: Food) =>
@@ -187,7 +174,6 @@ export default function Home() {
               ),
           ),
         );
-        setGoal(data.goal);
       } else setFoods(sampleFoods(now));
     } catch {
       setFoods(sampleFoods(now));
@@ -198,14 +184,14 @@ export default function Home() {
   useEffect(() => {
     if (ready)
       try {
-        localStorage.setItem(key, JSON.stringify({ foods, goal }));
+        localStorage.setItem(key, JSON.stringify({ foods }));
       } catch {
         toast.add({
           title: '浏览器存储空间不足，当前修改尚未保存。',
           type: 'error',
         });
       }
-  }, [foods, goal, ready]);
+  }, [foods, ready]);
   useEffect(() => {
     fetch('/config.json')
       .then((r) => r.json())
@@ -223,14 +209,13 @@ export default function Home() {
   }, []);
   const daily = foods.filter((f) => f.date === date),
     sums = total(daily),
-    energy = kcal(sums),
-    target = kcal(goal);
+    energy = kcal(sums);
   const fatEnergy = fatEnergyShare(sums);
   const current = new Date(date + 'T12:00:00');
   const monday = addDays(date, -((current.getDay() + 6) % 7));
 
-  const liveState = useRef({ foods, date, goal });
-  liveState.current = { foods, date, goal };
+  const liveState = useRef({ foods, date });
+  liveState.current = { foods, date };
   useEffect(() => {
     type Tool = {
       name: string;
@@ -270,14 +255,13 @@ export default function Home() {
             foods: entries.map(({ photo, ...rest }) => rest),
             totals: sums,
             kcal: kcal(sums),
-            goals: state.goal,
+            fatEnergy: fatEnergyShare(sums),
           };
         },
       },
       {
-        name: 'start_food_record',
-        description:
-          '打开手动饮食记录表单并选择餐次，尚未保存记录，用户核对后保存。',
+        name: 'start_photo_record',
+        description: '打开拍照或相册选择流程并选择餐次，尚未识别或保存记录。',
         inputSchema: {
           type: 'object',
           properties: { meal: { type: 'string', enum: meals } },
@@ -293,10 +277,16 @@ export default function Home() {
             taskId.current++;
             setBusy(false);
             setDraft(fresh(meal, liveState.current.date));
+            setPhoto('');
+            setFile(null);
             setError('');
-            setModal('edit');
+            setModal('add');
           });
-          return { status: 'draft_opened', meal, date: liveState.current.date };
+          return {
+            status: 'photo_flow_opened',
+            meal,
+            date: liveState.current.date,
+          };
         },
       },
     ];
@@ -384,8 +374,7 @@ export default function Home() {
         } finally {
           clearTimeout(timeout);
         }
-        if (!response.ok)
-          throw Error('识别服务暂时不可用，请稍后重试或手动记录。');
+        if (!response.ok) throw Error('识别服务暂时不可用，请稍后重试。');
         result = await response.json();
         if (
           typeof result.name !== 'string' ||
@@ -398,7 +387,7 @@ export default function Home() {
           ) ||
           Number(result.grams) <= 0
         )
-          throw Error('解析结果格式不正确，请手动记录。');
+          throw Error('解析结果格式不正确，请重新识别或更换照片。');
         result = {
           name: result.name,
           grams: result.grams,
@@ -487,16 +476,6 @@ export default function Home() {
             </strong>
           </a>
           <h1 className="app-title">饮食日记</h1>
-          <button
-            className="profile"
-            onClick={() => {
-              setGoalDraft(goal);
-              setModal('goal');
-            }}
-            aria-label="设置每日营养目标"
-          >
-            <SlidersHorizontal size={20} />
-          </button>
         </div>
       </header>
       <main className="workspace">
@@ -564,27 +543,10 @@ export default function Home() {
                 : `${current.getMonth() + 1}月${current.getDate()}日`}
               营养摄入
             </h2>
-            <button
-              className="text-btn"
-              onClick={() => {
-                setGoalDraft(goal);
-                setModal('goal');
-              }}
-            >
-              调整目标
-              <SlidersHorizontal size={15} />
-            </button>
           </div>
           <div className="summary-body">
             <div className="energy">
-              <div
-                className="energy-ring"
-                style={
-                  {
-                    '--percent': `${Math.min(energy / target, 1) * 100}%`,
-                  } as React.CSSProperties
-                }
-              >
+              <div className="energy-ring">
                 <div>
                   <span>已摄入</span>
                   <strong>{energy.toLocaleString()}</strong>
@@ -592,13 +554,6 @@ export default function Home() {
                 </div>
               </div>
               <div className="energy-caption">
-                <span>
-                  每日目标 <b>{target.toLocaleString()}</b> 千卡
-                </span>
-                <span className="remaining">
-                  {energy > target ? '已超出' : '还可摄入'}{' '}
-                  <b>{Math.abs(target - energy).toLocaleString()}</b> 千卡
-                </span>
                 <span className="fat-energy-share" aria-live="polite">
                   <span className="fat-share-label">
                     <i />
@@ -630,15 +585,10 @@ export default function Home() {
                   </div>
                   <div className="macro-value">
                     {round(sums[m.k])}
-                    <span> / {goal[m.k]} g</span>
+                    <span> g</span>
                   </div>
-                  <Progress
-                    aria-label={m.name + '目标完成比例'}
-                    value={Math.min(100, (sums[m.k] / goal[m.k]) * 100)}
-                  />
                   <div className="macro-foot">
                     <span>{m.en}</span>
-                    <b>{Math.round((sums[m.k] / goal[m.k]) * 100)}%</b>
                   </div>
                 </div>
               ))}
@@ -647,9 +597,7 @@ export default function Home() {
           <div className="summary-note">
             <Leaf size={15} />
             <span>每一份记录，都是更了解自己的开始。</span>
-            <span className="sample-note">
-              目标与初始食物为示例 · 可自由修改
-            </span>
+            <span className="sample-note">初始食物为示例 · 可修改或删除</span>
           </div>
         </section>
         <div className="content-grid">
@@ -762,17 +710,6 @@ export default function Home() {
         </div>
       </main>
       <div className="mobile-action">
-        <button
-          className="manual-action"
-          onClick={() => {
-            setDraft(fresh('午餐', date));
-            setError('');
-            setModal('edit');
-          }}
-        >
-          <Pencil size={19} />
-          <span>手动记录</span>
-        </button>
         <button className="primary" onClick={() => start()}>
           <Camera size={20} />
           拍照记饮食
@@ -781,20 +718,16 @@ export default function Home() {
       <Dialog open={modal !== null} onOpenChange={(v) => !v && close()}>
         <DialogContent className="app-dialog">
           <DialogTitle className="dialog-title">
-            {modal === 'goal'
-              ? '每日营养目标'
-              : modal === 'edit'
-                ? draft.id
-                  ? '编辑饮食记录'
-                  : '确认食物与营养'
-                : '记录这一餐'}
+            {modal === 'edit'
+              ? draft.id
+                ? '编辑饮食记录'
+                : '确认食物与营养'
+              : '记录这一餐'}
           </DialogTitle>
           <DialogDescription>
-            {modal === 'goal'
-              ? '按你的实际计划设置目标，热量由三大营养素自动计算。'
-              : modal === 'edit'
-                ? '确认食物、份量和餐次后，再加入饮食日记。'
-                : '拍下餐盘，或从相册选择一张食物照片。'}
+            {modal === 'edit'
+              ? '确认食物、份量和餐次后，再加入饮食日记。'
+              : '拍下餐盘，或从相册选择一张食物照片。'}
           </DialogDescription>
           {modal === 'add' && (
             <>
@@ -897,17 +830,6 @@ export default function Home() {
                         : '体验示例识别'}
                   </>
                 )}
-              </button>
-              <button
-                className="text-btn centered"
-                onClick={() => {
-                  setDraft((d) => ({ ...d, photo }));
-                  setModal('edit');
-                }}
-                disabled={busy}
-              >
-                跳过识别，手动填写
-                <ArrowRight size={16} />
               </button>
             </>
           )}
@@ -1045,64 +967,6 @@ export default function Home() {
                   删除这条记录
                 </button>
               )}
-            </form>
-          )}
-          {modal === 'goal' && (
-            <form
-              className="edit-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (
-                  !Object.values(goalDraft).every(
-                    (v) => Number.isFinite(v) && v > 0 && v <= 2000,
-                  )
-                ) {
-                  setError('请设置 1–2000 克之间的目标。');
-                  return;
-                }
-                setGoal(goalDraft);
-                close();
-                toast.add({ title: '每日营养目标已更新', type: 'success' });
-              }}
-            >
-              <div className="goal-symbol">
-                <Leaf size={30} />
-              </div>
-              {(
-                [
-                  { k: 'p', label: '蛋白质' },
-                  { k: 'c', label: '碳水化合物' },
-                  { k: 'f', label: '脂肪' },
-                ] as const
-              ).map((m) => (
-                <label key={m.k}>
-                  {m.label}目标（g）
-                  <input
-                    required
-                    type="number"
-                    min="1"
-                    max="2000"
-                    step="1"
-                    value={goalDraft[m.k]}
-                    onChange={(e) =>
-                      setGoalDraft({
-                        ...goalDraft,
-                        [m.k]: Number(e.target.value),
-                      })
-                    }
-                  />
-                </label>
-              ))}
-              <div className="calorie-preview">
-                每日能量目标
-                <strong>
-                  {kcal(goalDraft)} <small>千卡</small>
-                </strong>
-              </div>
-              <span className="field-hint">
-                初始目标仅用于演示，不是个性化营养建议。
-              </span>
-              <button className="primary full">保存目标</button>
             </form>
           )}
           {error && (

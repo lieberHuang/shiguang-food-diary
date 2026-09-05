@@ -1601,3 +1601,55 @@ body {
   max-width: 160px;
   flex: 1;
 }
+/* Actual intake only: there are no daily targets or completion indicators. */
+.energy-ring {
+  background: #f0f6ec;
+  border: 1px solid #e7efdf;
+  padding: 7px;
+}
+.energy-ring > div {
+  background: #f9fcf6;
+}
+.energy-caption {
+  flex: initial;
+  max-width: none;
+}
+.fat-energy-share {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  border: 0;
+  padding: 0;
+}
+.fat-share-label {
+  font-size: 13px;
+}
+.fat-energy-share strong {
+  font-size: 26px;
+  line-height: 1.25;
+  margin-left: 10px;
+}
+.fat-energy-share small {
+  font-size: 11px;
+  margin-left: 10px;
+}
+.macro-grid {
+  padding-top: 20px;
+}
+.macro-value {
+  margin: 10px 0 6px;
+}
+.macro-value span {
+  font-size: 13px;
+}
+.macro-foot {
+  margin-top: 0;
+}
+.summary-body {
+  gap: 19px;
+}
+.mobile-action {
+  padding-left: 24px;
+  padding-right: 24px;
+}
