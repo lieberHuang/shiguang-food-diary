@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { fatEnergyShare } from '@/lib/nutrition';
 import {
   Leaf,
   ChevronLeft,
@@ -224,6 +225,7 @@ export default function Home() {
     sums = total(daily),
     energy = kcal(sums),
     target = kcal(goal);
+  const fatEnergy = fatEnergyShare(sums);
   const current = new Date(date + 'T12:00:00');
   const monday = addDays(date, -((current.getDay() + 6) % 7));
 
@@ -596,6 +598,20 @@ export default function Home() {
                 <span className="remaining">
                   {energy > target ? '已超出' : '还可摄入'}{' '}
                   <b>{Math.abs(target - energy).toLocaleString()}</b> 千卡
+                </span>
+                <span className="fat-energy-share" aria-live="polite">
+                  <span className="fat-share-label">
+                    <i />
+                    脂肪供能占比
+                  </span>
+                  <strong>
+                    {fatEnergy.percent === null ? '—' : `${fatEnergy.percent}%`}
+                  </strong>
+                  <small>
+                    {fatEnergy.percent === null
+                      ? '记录饮食后显示'
+                      : `脂肪提供 ${round(fatEnergy.fatKcal)} 千卡`}
+                  </small>
                 </span>
               </div>
             </div>
