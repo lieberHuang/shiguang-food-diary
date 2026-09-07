@@ -1,5 +1,11 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = { output: 'export' };
+const isGitHubPages = process.env.GITHUB_PAGES === 'true';
+const assetPrefix = isGitHubPages ? '/shiguang-food-diary' : undefined;
+
+const nextConfig: NextConfig = {
+  output: 'export',
+  assetPrefix,
+};
 
 export default nextConfig;

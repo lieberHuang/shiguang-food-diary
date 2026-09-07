@@ -60,10 +60,11 @@ const mealTimes = [
   '用一餐美味结束忙碌',
   '给自己一点小满足',
 ];
+const staticBase = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const images = {
-  breakfast: '/images/breakfast.jpg',
-  lunch: '/images/lunch.jpg',
-  snack: '/images/snack.jpg',
+  breakfast: `${staticBase}/images/breakfast.jpg`,
+  lunch: `${staticBase}/images/lunch.jpg`,
+  snack: `${staticBase}/images/snack.jpg`,
 };
 const key = 'shiguang-diary-v1';
 const dayKey = (d: Date) =>
@@ -192,7 +193,7 @@ export default function Home() {
       }
   }, [foods, ready]);
   useEffect(() => {
-    fetch('/config.json')
+    fetch(`${staticBase}/config.json`)
       .then((r) => r.json())
       .then((c) =>
         setEndpoint(
@@ -466,7 +467,7 @@ export default function Home() {
       <Toaster />
       <header className="topbar">
         <div className="topbar-inner">
-          <a className="brand" href="/" aria-label="食光首页">
+          <a className="brand" href={staticBase || '/'} aria-label="食光首页">
             <span className="brand-icon">
               <Leaf size={23} />
             </span>

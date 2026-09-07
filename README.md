@@ -17,6 +17,8 @@ npm run build
 
 静态页面在 `dist/client/`。需要通过 HTTP 静态服务访问（不支持双击 HTML 的 file:// 模式），不要将源项目或 node_modules 当作静态站点发布。
 
+发布到 GitHub Pages 时运行 `npm run build:github-pages`，它会生成带仓库路径前缀的静态资源。
+
 ## 功能
 
 - 顶部仅展示当天实际摄入的蛋白质、碳水、脂肪和热量。
