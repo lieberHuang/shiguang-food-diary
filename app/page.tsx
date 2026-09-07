@@ -605,15 +605,7 @@ export default function Home() {
               <div>
                 <h2>我的餐盘</h2>
               </div>
-              <div className="diary-actions">
-                <span className="record-count">
-                  已记录 {daily.length} 份食物
-                </span>
-                <button className="add-diary" onClick={() => start()}>
-                  <Plus size={17} />
-                  添加
-                </button>
-              </div>
+              <span className="record-count">已记录 {daily.length} 份食物</span>
             </div>
             {meals.map((meal, index) => {
               const entries = daily.filter((f) => f.meal === meal);
