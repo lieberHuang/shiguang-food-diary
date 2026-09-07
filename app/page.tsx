@@ -20,7 +20,6 @@ import {
   Trash2,
   LoaderCircle,
   X,
-  ArrowRight,
   ScanLine,
   Info,
 } from 'lucide-react';
@@ -606,7 +605,15 @@ export default function Home() {
               <div>
                 <h2>我的餐盘</h2>
               </div>
-              <span className="record-count">已记录 {daily.length} 份食物</span>
+              <div className="diary-actions">
+                <span className="record-count">
+                  已记录 {daily.length} 份食物
+                </span>
+                <button className="add-diary" onClick={() => start()}>
+                  <Plus size={17} />
+                  添加
+                </button>
+              </div>
             </div>
             {meals.map((meal, index) => {
               const entries = daily.filter((f) => f.meal === meal);
@@ -632,14 +639,6 @@ export default function Home() {
                         mealTimes[index]
                       )}
                     </span>
-                    <button
-                      className="add-meal"
-                      onClick={() => start(meal)}
-                      aria-label={'添加' + meal}
-                    >
-                      <Plus size={18} />
-                      <span>添加</span>
-                    </button>
                   </div>
                   {entries.map((f) => (
                     <button
@@ -690,13 +689,12 @@ export default function Home() {
                     </button>
                   ))}
                   {!entries.length && (
-                    <button className="empty-row" onClick={() => start(meal)}>
+                    <div className="empty-row" aria-label={meal + '暂无记录'}>
                       <span className="empty-plus">
                         <Plus size={19} />
                       </span>
-                      <span>还没记录{meal}，添加一份美味吧</span>
-                      <ArrowRight size={17} />
-                    </button>
+                      <span>还没记录{meal}</span>
+                    </div>
                   )}
                 </article>
               );
