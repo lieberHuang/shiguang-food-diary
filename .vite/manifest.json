@@ -11,7 +11,7 @@
     "name": "rolldown-runtime"
   },
   "app/page.tsx": {
-    "file": "shiguang-food-diary/_next/static/chunks/page-DdPkiT6n.js",
+    "file": "shiguang-food-diary/_next/static/chunks/page-Bi3NG7OC.js",
     "name": "page",
     "src": "app/page.tsx",
     "isDynamicEntry": true,
@@ -21,7 +21,7 @@
     ]
   },
   "node_modules/vinext/dist/shims/internal/app-route-prefetch-policy.js": {
-    "file": "shiguang-food-diary/_next/static/chunks/app-route-prefetch-policy-D18UylJZ.js",
+    "file": "shiguang-food-diary/_next/static/chunks/app-route-prefetch-policy-DvikE2cu.js",
     "name": "app-route-prefetch-policy",
     "src": "node_modules/vinext/dist/shims/internal/app-route-prefetch-policy.js",
     "isDynamicEntry": true,
@@ -30,7 +30,7 @@
     ]
   },
   "node_modules/vinext/dist/shims/layout-segment-context.js": {
-    "file": "shiguang-food-diary/_next/static/chunks/layout-segment-context-BUkqrZnp.js",
+    "file": "shiguang-food-diary/_next/static/chunks/layout-segment-context-BGd-zKG_.js",
     "name": "layout-segment-context",
     "src": "node_modules/vinext/dist/shims/layout-segment-context.js",
     "isDynamicEntry": true,
@@ -51,7 +51,7 @@
     ]
   },
   "virtual:vinext-app-browser-entry": {
-    "file": "shiguang-food-diary/_next/static/chunks/index-8QSNMUiS.js",
+    "file": "shiguang-food-diary/_next/static/chunks/index-Cn6zHGex.js",
     "name": "index",
     "src": "virtual:vinext-app-browser-entry",
     "isEntry": true,
