@@ -776,6 +776,9 @@ h1 {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+.direct-demo-actions {
+  margin-top: 10px;
+}
 .secondary {
   border: 1px solid #dbe6da;
   background: white;

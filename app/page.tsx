@@ -9,7 +9,6 @@ import {
   CalendarDays,
   Camera,
   Plus,
-  Sparkles,
   Sun,
   Sunrise,
   Moon,
@@ -19,8 +18,6 @@ import {
   Check,
   Trash2,
   LoaderCircle,
-  X,
-  ScanLine,
   Info,
 } from 'lucide-react';
 import {
@@ -143,13 +140,8 @@ export default function Home() {
   const [ready, setReady] = useState(false);
   const [modal, setModal] = useState<'add' | 'edit' | null>(null);
   const [draft, setDraft] = useState<Food>(fresh('午餐', '2026-09-05'));
-  const [endpoint, setEndpoint] = useState('');
   const [busy, setBusy] = useState(false);
-  const [photo, setPhoto] = useState('');
-  const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState('');
-  const uploadRef = useRef<HTMLInputElement>(null);
-  const cameraRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
   const taskId = useRef(0);
   useEffect(() => {
@@ -192,21 +184,6 @@ export default function Home() {
         });
       }
   }, [foods, ready]);
-  useEffect(() => {
-    fetch(`${staticBase}/config.json`)
-      .then((r) => r.json())
-      .then((c) =>
-        setEndpoint(
-          c &&
-            typeof c === 'object' &&
-            'analysisEndpoint' in c &&
-            typeof c.analysisEndpoint === 'string'
-            ? c.analysisEndpoint
-            : '',
-        ),
-      )
-      .catch(() => {});
-  }, []);
   const daily = foods.filter((f) => f.date === date),
     sums = total(daily),
     energy = kcal(sums);
@@ -277,8 +254,6 @@ export default function Home() {
             taskId.current++;
             setBusy(false);
             setDraft(fresh(meal, liveState.current.date));
-            setPhoto('');
-            setFile(null);
             setError('');
             setModal('add');
           });
@@ -303,8 +278,6 @@ export default function Home() {
     taskId.current++;
     setBusy(false);
     setDraft(fresh(meal, date));
-    setPhoto('');
-    setFile(null);
     setError('');
     setModal('add');
   };
@@ -313,102 +286,22 @@ export default function Home() {
     setBusy(false);
     setModal(null);
   };
-  async function pick(f?: File) {
-    if (!f) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(f.type)) {
-      setError('请选择 JPG、PNG 或 WebP 图片。');
-      return;
-    }
-    if (f.size > 10 * 1024 * 1024) {
-      setError('图片需小于 10 MB，请压缩后重试。');
-      return;
-    }
-    setError('');
-    setFile(f);
-    const id = ++taskId.current;
-    try {
-      const uri = await new Promise<string>((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(String(r.result));
-        r.onerror = reject;
-        r.readAsDataURL(f);
-      });
-      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const i = new Image();
-        i.onload = () => resolve(i);
-        i.onerror = reject;
-        i.src = uri;
-      });
-      const canvas = document.createElement('canvas');
-      const scale = Math.min(1, 640 / img.width, 640 / img.height);
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
-      canvas
-        .getContext('2d')!
-        .drawImage(img, 0, 0, canvas.width, canvas.height);
-      if (id === taskId.current) setPhoto(canvas.toDataURL('image/jpeg', 0.75));
-    } catch {
-      setError('这张图片无法读取，请换一张试试。');
-    }
-  }
   async function analyze() {
     const id = ++taskId.current;
     setBusy(true);
     setError('');
     try {
-      const config = { analysisEndpoint: endpoint };
-      let result: Partial<Food>;
-      if (config.analysisEndpoint) {
-        if (!file) throw Error('请先选择一张食物照片。');
-        const fd = new FormData();
-        fd.append('image', file);
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 30000);
-        let response;
-        try {
-          response = await fetch(config.analysisEndpoint, {
-            method: 'POST',
-            body: fd,
-            signal: controller.signal,
-          });
-        } finally {
-          clearTimeout(timeout);
-        }
-        if (!response.ok) throw Error('识别服务暂时不可用，请稍后重试。');
-        result = await response.json();
-        if (
-          typeof result.name !== 'string' ||
-          !result.name.trim() ||
-          !['grams', 'p', 'c', 'f'].every(
-            (k) =>
-              typeof result[k as keyof Food] === 'number' &&
-              Number.isFinite(result[k as keyof Food]) &&
-              Number(result[k as keyof Food]) >= 0,
-          ) ||
-          Number(result.grams) <= 0
-        )
-          throw Error('解析结果格式不正确，请重新识别或更换照片。');
-        result = {
-          name: result.name,
-          grams: result.grams,
-          p: result.p,
-          c: result.c,
-          f: result.f,
-          sample: false,
-        };
-      } else {
-        await new Promise((r) => setTimeout(r, 1100));
-        result = {
-          name: '香煎鸡胸肉蔬菜沙拉',
-          grams: 350,
-          p: 38.6,
-          c: 42.5,
-          f: 16.2,
-          sample: true,
-        };
-      }
+      await new Promise((r) => setTimeout(r, 700));
+      const result: Partial<Food> = {
+        name: '香煎鸡胸肉蔬菜沙拉',
+        grams: 350,
+        p: 38.6,
+        c: 42.5,
+        f: 16.2,
+        sample: true,
+      };
       if (id !== taskId.current) return;
-      setDraft((d) => ({ ...d, ...result, photo: photo || images.lunch }));
+      setDraft((d) => ({ ...d, ...result, photo: images.lunch }));
       setModal('edit');
     } catch (e) {
       if (id === taskId.current)
@@ -701,8 +594,7 @@ export default function Home() {
             })}
             <p className="local-note">
               <span className="green-dot" />
-              记录仅保存在当前浏览器 ·{' '}
-              {endpoint ? '照片将发送至已配置的识别服务' : '照片识别为示例体验'}
+              记录仅保存在当前浏览器 · 当前为示例识别体验
             </p>
           </section>
         </div>
@@ -725,110 +617,46 @@ export default function Home() {
           <DialogDescription>
             {modal === 'edit'
               ? '确认食物、份量和餐次后，再加入饮食日记。'
-              : '拍下餐盘，或从相册选择一张食物照片。'}
+              : '选择一种方式，体验示例识别。'}
           </DialogDescription>
           {modal === 'add' && (
             <>
-              <div
-                className="upload-area"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  pick(e.dataTransfer.files[0]);
-                }}
-              >
-                {photo ? (
-                  <>
-                    <img src={photo} alt="待记录食物照片" />
-                    <button
-                      className="remove-photo"
-                      aria-label="移除照片"
-                      onClick={() => {
-                        setPhoto('');
-                        setFile(null);
-                      }}
-                    >
-                      <X size={18} />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span className="upload-icon">
-                      <ScanLine size={38} />
-                    </span>
-                    <h3>把这一餐，放进食光</h3>
-                    <p>支持 JPG、PNG、WebP，最大 10 MB</p>
-                  </>
-                )}
-              </div>
-              <input
-                hidden
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                ref={uploadRef}
-                onChange={(e) => {
-                  pick(e.target.files?.[0]);
-                  e.target.value = '';
-                }}
-              />
-              <input
-                hidden
-                type="file"
-                accept="image/*"
-                capture="environment"
-                ref={cameraRef}
-                onChange={(e) => {
-                  pick(e.target.files?.[0]);
-                  e.target.value = '';
-                }}
-              />
-              <div className="upload-actions">
+              <div className="upload-actions direct-demo-actions">
                 <button
                   className="secondary"
-                  onClick={() => cameraRef.current?.click()}
+                  onClick={analyze}
                   disabled={busy}
                 >
-                  <Camera size={18} />
-                  拍一张
+                  {busy ? (
+                    <>
+                      <LoaderCircle className="spin" size={18} />
+                      正在准备示例结果…
+                    </>
+                  ) : (
+                    <>
+                      <Camera size={18} />
+                      拍一张
+                    </>
+                  )}
                 </button>
                 <button
                   className="secondary"
-                  onClick={() => uploadRef.current?.click()}
+                  onClick={analyze}
                   disabled={busy}
                 >
-                  <ImagePlus size={18} />
-                  从相册选择
+                  {busy ? (
+                    <>
+                      <LoaderCircle className="spin" size={18} />
+                      正在准备示例结果…
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus size={18} />
+                      从相册选择
+                    </>
+                  )}
                 </button>
               </div>
-              <div className="demo-notice">
-                <Info size={17} />
-                <span>
-                  {endpoint
-                    ? '点击识别后，照片将发送至已配置的服务进行解析。请在保存前核对估算结果。'
-                    : '当前为示例模式。照片不会上传，展示固定示例营养值，不代表照片的实际识别结果。'}
-                </span>
-              </div>
-              <button
-                className="primary full"
-                disabled={busy || Boolean(endpoint && !file)}
-                onClick={analyze}
-              >
-                {busy ? (
-                  <>
-                    <LoaderCircle className="spin" size={18} />
-                    {endpoint ? '正在解析食物…' : '正在准备示例结果…'}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={18} />
-                    {endpoint
-                      ? '解析食物照片'
-                      : photo
-                        ? '使用照片体验示例'
-                        : '体验示例识别'}
-                  </>
-                )}
-              </button>
             </>
           )}
           {modal === 'edit' && (
