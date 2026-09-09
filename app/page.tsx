@@ -610,6 +610,8 @@ export default function Home() {
             </div>
             {meals.map((meal, index) => {
               const entries = daily.filter((f) => f.meal === meal);
+              const mealMacros = total(entries);
+              const mealFatEnergy = fatEnergyShare(mealMacros);
               const Icon = mealIcons[index];
               return (
                 <article
@@ -626,12 +628,17 @@ export default function Home() {
                     <span className="meal-calories">
                       {entries.length ? (
                         <>
-                          <b>{kcal(total(entries))}</b> 千卡
+                          <b>{kcal(mealMacros)}</b> 千卡
                         </>
                       ) : (
                         mealTimes[index]
                       )}
                     </span>
+                    {entries.length && mealFatEnergy.percent !== null && (
+                      <span className="meal-fat-share">
+                        <i />脂肪供能 {mealFatEnergy.percent}%
+                      </span>
+                    )}
                   </div>
                   {entries.map((f) => (
                     <button

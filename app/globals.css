@@ -541,6 +541,21 @@ h1 {
   color: #6a7b69;
   font-weight: 500;
 }
+.meal-fat-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: #a17a8e;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.meal-fat-share i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c79aad;
+}
 .food-row {
   width: 100%;
   border: 0;
@@ -1435,6 +1450,10 @@ body {
 .meal-calories {
   max-width: 55%;
   overflow-wrap: anywhere;
+}
+.meal-fat-share {
+  font-size: 10px;
+  gap: 3px;
 }
 .local-note {
   font-size: 10px;
