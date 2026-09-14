@@ -360,14 +360,6 @@ export default function Home() {
       <Toaster />
       <header className="topbar">
         <div className="topbar-inner">
-          <a className="brand" href={staticBase || '/'} aria-label="食光首页">
-            <span className="brand-icon">
-              <Leaf size={23} />
-            </span>
-            <strong>
-              食光<span>SHIGUANG</span>
-            </strong>
-          </a>
           <h1 className="app-title">饮食日记</h1>
         </div>
       </header>
@@ -439,13 +431,6 @@ export default function Home() {
           </div>
           <div className="summary-body">
             <div className="energy">
-              <div className="energy-ring">
-                <div>
-                  <span>已摄入</span>
-                  <strong>{energy.toLocaleString()}</strong>
-                  <small>千卡</small>
-                </div>
-              </div>
               <div className="energy-caption">
                 <span className="fat-energy-share" aria-live="polite">
                   <span className="fat-share-label">
@@ -462,13 +447,20 @@ export default function Home() {
                   </small>
                 </span>
               </div>
+              <div className="energy-ring">
+                <div>
+                  <span>已摄入</span>
+                  <strong>{energy.toLocaleString()}</strong>
+                  <small>千卡</small>
+                </div>
+              </div>
             </div>
             <div className="macro-grid">
               {(
                 [
+                  { k: 'f', name: '脂肪', en: 'FAT', color: 'fat' },
                   { k: 'p', name: '蛋白质', en: 'PROTEIN', color: 'protein' },
                   { k: 'c', name: '碳水化合物', en: 'CARBS', color: 'carbs' },
-                  { k: 'f', name: '脂肪', en: 'FAT', color: 'fat' },
                 ] as const
               ).map((m) => (
                 <div className={'macro ' + m.color} key={m.k}>
@@ -518,6 +510,11 @@ export default function Home() {
                       <Icon size={20} />
                     </div>
                     <h3>{meal}</h3>
+                    {entries.length && mealFatEnergy.percent !== null && (
+                      <span className="meal-fat-share">
+                        <i />脂肪供能 {mealFatEnergy.percent}%
+                      </span>
+                    )}
                     <span className="meal-calories">
                       {entries.length ? (
                         <>
@@ -527,11 +524,6 @@ export default function Home() {
                         mealTimes[index]
                       )}
                     </span>
-                    {entries.length && mealFatEnergy.percent !== null && (
-                      <span className="meal-fat-share">
-                        <i />脂肪供能 {mealFatEnergy.percent}%
-                      </span>
-                    )}
                   </div>
                   {entries.map((f) => (
                     <button
