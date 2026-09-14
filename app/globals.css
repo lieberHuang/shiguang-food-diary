@@ -1750,3 +1750,68 @@ body {
 .energy-summary-card strong {
   font-size: clamp(23px, 6vw, 30px);
 }
+
+/* The swapped cards form two deliberate reading groups: fat first, total energy below. */
+.summary-body {
+  gap: 18px;
+}
+.energy {
+  width: 100%;
+  gap: 12px;
+  justify-content: stretch;
+  align-items: stretch;
+}
+.energy-caption {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.energy-caption .fat-energy-share {
+  width: 100%;
+  min-width: 0;
+  min-height: clamp(112px, 32vw, 130px);
+  padding: 15px 14px;
+  justify-content: center;
+  gap: 5px;
+}
+.fat-summary-card {
+  flex: 0 0 clamp(104px, 30vw, 130px);
+  width: clamp(104px, 30vw, 130px);
+  min-height: clamp(112px, 32vw, 130px);
+  padding: 14px 12px !important;
+}
+.fat-summary-card .macro-name {
+  font-size: 13px;
+}
+.fat-summary-card .macro-value {
+  margin: 7px 0 5px;
+}
+.macro-grid {
+  gap: 10px;
+  padding-top: 17px;
+  align-items: stretch;
+}
+.energy-summary-card {
+  width: 100%;
+  min-width: 0;
+  min-height: 108px;
+  height: auto;
+  padding: 7px;
+  justify-self: stretch;
+  align-self: stretch;
+  box-shadow: inset 0 0 0 1px #e7efdf;
+}
+.energy-summary-card > div {
+  background: #f9fcf6;
+}
+.energy-summary-card span,
+.energy-summary-card small {
+  font-size: 11px;
+}
+.energy-summary-card strong {
+  margin: 2px 0;
+  font-size: clamp(22px, 6.2vw, 29px);
+}
+.macro-grid > .macro:not(.fat) {
+  align-self: center;
+}
