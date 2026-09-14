@@ -1721,3 +1721,32 @@ body {
 .meal-calories b {
   color: #587565;
 }
+.fat-summary-card {
+  width: clamp(104px, 30vw, 130px);
+  min-height: clamp(104px, 30vw, 130px);
+  margin: 0 !important;
+  padding: 15px 13px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.fat-summary-card .macro-value {
+  margin: 9px 0 7px;
+  font-size: clamp(25px, 7vw, 31px);
+}
+.fat-summary-card .macro-foot {
+  margin-top: 0;
+}
+.energy-summary-card {
+  width: min(100%, 126px);
+  height: auto;
+  aspect-ratio: 1;
+  justify-self: start;
+  align-self: center;
+}
+.energy-summary-card > div {
+  background: #f9fcf6;
+}
+.energy-summary-card strong {
+  font-size: clamp(23px, 6vw, 30px);
+}

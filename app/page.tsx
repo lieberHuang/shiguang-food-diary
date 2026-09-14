@@ -447,18 +447,29 @@ export default function Home() {
                   </small>
                 </span>
               </div>
-              <div className="energy-ring">
+              <div className="macro fat fat-summary-card">
+                <div className="macro-name">
+                  <i />脂肪
+                </div>
+                <div className="macro-value">
+                  {round(sums.f)}
+                  <span> g</span>
+                </div>
+                <div className="macro-foot">
+                  <span>FAT</span>
+                </div>
+              </div>
+            </div>
+            <div className="macro-grid">
+              <div className="energy-ring energy-summary-card">
                 <div>
                   <span>已摄入</span>
                   <strong>{energy.toLocaleString()}</strong>
                   <small>千卡</small>
                 </div>
               </div>
-            </div>
-            <div className="macro-grid">
               {(
                 [
-                  { k: 'f', name: '脂肪', en: 'FAT', color: 'fat' },
                   { k: 'p', name: '蛋白质', en: 'PROTEIN', color: 'protein' },
                   { k: 'c', name: '碳水化合物', en: 'CARBS', color: 'carbs' },
                 ] as const
