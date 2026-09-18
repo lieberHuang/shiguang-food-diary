@@ -859,7 +859,6 @@ export default function Home() {
               <div className="recognition-hero">
                 <img src={images.lunch} alt="本次识别的餐食照片" />
                 <div>
-                  <span className="recognition-label">本次餐食</span>
                   <strong>{recognized[0]?.meal}</strong>
                   <p>{recognized.length} 种食物 · {kcal(recognizedMacros)} 千卡</p>
                 </div>

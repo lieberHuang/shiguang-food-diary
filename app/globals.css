@@ -1843,10 +1843,6 @@ body {
   display: grid;
   gap: 2px;
 }
-.recognition-label {
-  font-size: 11px;
-  color: #829486;
-}
 .recognition-hero strong {
   color: #385a45;
   font-size: 16px;
