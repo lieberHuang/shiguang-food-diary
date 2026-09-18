@@ -1843,10 +1843,22 @@ body {
   display: grid;
   gap: 2px;
 }
-.recognition-hero strong {
+.recognition-meal-select {
+  width: fit-content !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 7px 0 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid #bdd7c3 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   color: #385a45;
   font-size: 16px;
   font-weight: 650;
+}
+.recognition-meal-select:focus-visible {
+  outline: 2px solid #8ab99a;
+  outline-offset: 2px;
 }
 .recognition-hero p {
   color: #879487;

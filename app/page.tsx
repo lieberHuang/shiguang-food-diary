@@ -859,7 +859,32 @@ export default function Home() {
               <div className="recognition-hero">
                 <img src={images.lunch} alt="本次识别的餐食照片" />
                 <div>
-                  <strong>{recognized[0]?.meal}</strong>
+                  <Select
+                    value={recognized[0]?.meal}
+                    onValueChange={(value) =>
+                      value &&
+                      setRecognized((items) =>
+                        items.map((item) => ({
+                          ...item,
+                          meal: value as Meal,
+                        })),
+                      )
+                    }
+                  >
+                    <SelectTrigger
+                      className="recognition-meal-select"
+                      aria-label="选择本次餐食的餐次"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {meals.map((meal) => (
+                        <SelectItem key={meal} value={meal}>
+                          {meal}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <p>{recognized.length} 种食物 · {kcal(recognizedMacros)} 千卡</p>
                 </div>
               </div>
