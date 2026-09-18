@@ -138,8 +138,9 @@ export default function Home() {
   const [date, setDate] = useState('2026-09-05');
   const [foods, setFoods] = useState<Food[]>([]);
   const [ready, setReady] = useState(false);
-  const [modal, setModal] = useState<'add' | 'edit' | null>(null);
+  const [modal, setModal] = useState<'add' | 'review' | 'edit' | null>(null);
   const [draft, setDraft] = useState<Food>(fresh('午餐', '2026-09-05'));
+  const [recognized, setRecognized] = useState<Food[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const dateRef = useRef<HTMLInputElement>(null);
@@ -188,6 +189,7 @@ export default function Home() {
     sums = total(daily),
     energy = kcal(sums);
   const fatEnergy = fatEnergyShare(sums);
+  const recognizedMacros = total(recognized);
   const current = new Date(date + 'T12:00:00');
   const monday = addDays(date, -((current.getDay() + 6) % 7));
 
@@ -254,6 +256,7 @@ export default function Home() {
             taskId.current++;
             setBusy(false);
             setDraft(fresh(meal, liveState.current.date));
+            setRecognized([]);
             setError('');
             setModal('add');
           });
@@ -278,6 +281,7 @@ export default function Home() {
     taskId.current++;
     setBusy(false);
     setDraft(fresh(meal, date));
+    setRecognized([]);
     setError('');
     setModal('add');
   };
@@ -292,17 +296,51 @@ export default function Home() {
     setError('');
     try {
       await new Promise((r) => setTimeout(r, 700));
-      const result: Partial<Food> = {
-        name: '香煎鸡胸肉蔬菜沙拉',
-        grams: 350,
-        p: 38.6,
-        c: 42.5,
-        f: 16.2,
-        sample: true,
-      };
+      const time = new Date().toTimeString().slice(0, 5);
+      const result: Food[] = [
+        {
+          id: '',
+          name: '香煎鸡胸肉',
+          grams: 150,
+          p: 34,
+          c: 0,
+          f: 5,
+          meal: draft.meal,
+          date,
+          time,
+          photo: images.lunch,
+          sample: true,
+        },
+        {
+          id: '',
+          name: '烤南瓜',
+          grams: 120,
+          p: 2,
+          c: 29,
+          f: 0.5,
+          meal: draft.meal,
+          date,
+          time,
+          photo: images.lunch,
+          sample: true,
+        },
+        {
+          id: '',
+          name: '油醋蔬菜沙拉',
+          grams: 80,
+          p: 2.6,
+          c: 13.5,
+          f: 10.7,
+          meal: draft.meal,
+          date,
+          time,
+          photo: images.lunch,
+          sample: true,
+        },
+      ];
       if (id !== taskId.current) return;
-      setDraft((d) => ({ ...d, ...result, photo: images.lunch }));
-      setModal('edit');
+      setRecognized(result);
+      setModal('review');
     } catch (e) {
       if (id === taskId.current)
         setError(e instanceof Error ? e.message : '解析失败，请重试。');
@@ -340,6 +378,20 @@ export default function Home() {
     close();
     toast.add({
       title: '已保存到' + entry.meal + '，每日摄入已更新',
+      type: 'success',
+    });
+  }
+  function saveRecognized() {
+    if (!recognized.length) return;
+    const entries = recognized.map((food) => ({
+      ...food,
+      id: crypto.randomUUID(),
+      name: food.name.trim(),
+    }));
+    setFoods((all) => [...all, ...entries]);
+    close();
+    toast.add({
+      title: `已记录 ${entries.length} 种食物到${entries[0].meal}`,
       type: 'success',
     });
   }
@@ -615,11 +667,15 @@ export default function Home() {
               ? draft.id
                 ? '编辑饮食记录'
                 : '确认食物与营养'
+              : modal === 'review'
+                ? `识别到 ${recognized.length} 种食物`
               : '记录这一餐'}
           </DialogTitle>
           <DialogDescription>
             {modal === 'edit'
               ? '确认食物、份量和餐次后，再加入饮食日记。'
+              : modal === 'review'
+                ? '同一张照片中的食物已分项识别，确认后会分别记录。'
               : '选择一种方式，体验示例识别。'}
           </DialogDescription>
           {modal === 'add' && (
@@ -797,6 +853,56 @@ export default function Home() {
                 </button>
               )}
             </form>
+          )}
+          {modal === 'review' && (
+            <div className="recognition-review">
+              <div className="recognition-hero">
+                <img src={images.lunch} alt="本次识别的餐食照片" />
+                <div>
+                  <span className="recognition-label">本次餐食</span>
+                  <strong>{recognized[0]?.meal}</strong>
+                  <p>{recognized.length} 种食物 · {kcal(recognizedMacros)} 千卡</p>
+                </div>
+              </div>
+              <div className="recognition-list" aria-label="识别到的食物">
+                {recognized.map((food, index) => (
+                  <div className="recognized-food" key={food.name}>
+                    <span className="recognition-index">{index + 1}</span>
+                    <div className="recognized-main">
+                      <div className="recognized-title">
+                        <h4>{food.name}</h4>
+                        <span>{food.grams} 克</span>
+                      </div>
+                      <div className="recognized-macros">
+                        <span><i className="p-dot" />蛋白质 {round(food.p)}g</span>
+                        <span><i className="c-dot" />碳水 {round(food.c)}g</span>
+                        <span><i className="f-dot" />脂肪 {round(food.f)}g</span>
+                      </div>
+                    </div>
+                    <div className="recognized-kcal">
+                      <strong>{kcal(food)}</strong>
+                      <span>千卡</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="recognition-total">
+                <span>这一餐合计</span>
+                <div>
+                  <b>蛋白质 {round(recognizedMacros.p)}g</b>
+                  <b>碳水 {round(recognizedMacros.c)}g</b>
+                  <b>脂肪 {round(recognizedMacros.f)}g</b>
+                </div>
+              </div>
+              <div className="recognition-actions">
+                <button type="button" className="secondary" onClick={() => setModal('add')}>
+                  重新识别
+                </button>
+                <button type="button" className="primary" onClick={saveRecognized}>
+                  <Check size={18} />记录 {recognized.length} 种食物
+                </button>
+              </div>
+            </div>
           )}
           {error && (
             <p className="form-error" role="alert">
